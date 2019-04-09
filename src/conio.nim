@@ -32,56 +32,56 @@ when not defined(con):
         (fg_color, bg_color) = (colorNames.gray, colorNames.black)
         cur_visible = true
     using
-        _:      type con
+        Δ:      type con
         list:   varargs[auto, `$`]
         color:  color_names
         
     # --Methods goes here:
     # •Handles•
-    proc output*(_): File {.inline.} = stdout
-    proc input*(_): File {.inline.}  = stdin
+    proc output*(Δ): File {.inline.} = stdout
+    proc input*(Δ): File {.inline.}  = stdin
 
     # •Output•
-    proc write*(_, list): auto {.inline.}      = con.output.write list
-    proc write_line*(_, list): auto {.inline.} = con.write list; con.write '\n'
-    proc log*(_, list): auto {.inline.}        = con.write_line list.join " "
+    proc write*(Δ, list): auto {.inline.}      = con.output.write list
+    proc write_line*(Δ, list): auto {.inline.} = con.write list; con.write '\n'
+    proc log*(Δ, list): auto {.inline.}        = con.write_line list.join " "
 
     # •Input•
-    proc readline*(_): string {.discardable inline.}              = con.input.readLine
-    proc read*(_): int16 {.discardable inline.}                   = getChar().int16
-    proc read_key*(_; echoed = false): Rune {.discardable inline.} = 
+    proc readline*(Δ): string {.discardable inline.}              = con.input.readLine
+    proc read*(Δ): int16 {.discardable inline.}                   = getChar().int16
+    proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = 
         (if echoed: get_echoed_char() else: con.read()).Rune
 
     # •Colors•
     template colors*(_: type con): auto         = color_names
-    proc foreground_color*(_, color) {.inline.} = fg_color
-    proc background_color*(_, color) {.inline.} = bg_color
-    proc `foreground_color=`*(_, color) {.inline.} =
+    proc foreground_color*(Δ, color) {.inline.} = fg_color
+    proc background_color*(Δ, color) {.inline.} = bg_color
+    proc `foreground_color=`*(Δ, color) {.inline.} =
         let (shade, bright) = color_impl[color.int]
         con.output.setForegroundColor shade, bright
         fg_color = color
-    proc `background_color=`*(_, color) {.inline.} =
+    proc `background_color=`*(Δ, color) {.inline.} =
         let (shade, bright) = color_impl[color.int]
         con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
-    proc reset_color*(_) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
+    proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
     # •Advanced controls•
-    proc clear*(_) {.inline.}                                      = eraseScreen()
-    proc set_cursor_position*(_; left = 0, top = 0) {.inline.}     = con.output.setCursorPos(left, top)
-    proc window_width*(_): int {.inline.}                          = terminalWidth()
-    proc window_height*(_): int {.inline.}                         = terminalHeight()
-    proc cursor_visible*(_): bool {.inline.}                       = cur_visible
-    proc `cursor_visible=`*(_; val: bool) {.discardable inline.}   =
+    proc clear*(Δ) {.inline.}                                      = eraseScreen()
+    proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.}     = con.output.setCursorPos(left, top)
+    proc window_width*(Δ): int {.inline.}                          = terminalWidth()
+    proc window_height*(Δ): int {.inline.}                         = terminalHeight()
+    proc cursor_visible*(Δ): bool {.inline.}                       = cur_visible
+    proc `cursor_visible=`*(Δ; val: bool) {.discardable inline.}   =
         if val: hideCursor() else: showCursor()
         cur_visible = val
-        
+
     # •Misc•
-    proc caps_lock*(_): bool {.inline.}                   = (0x14.get_key_state and 0x0001) != 0
-    proc number_lock*(_): bool {.inline.}                 = (0x90.get_key_state and 0x0001) != 0
-    proc beep*(_; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
-    proc `title=`*(_; title: auto) {.inline discardable.} = discard $(title).newWideCString.setConsoleTitle
-    proc `title`*(_): string {.inline.} =
+    proc caps_lock*(Δ): bool {.inline.}                   = (0x14.get_key_state and 0x0001) != 0
+    proc number_lock*(Δ): bool {.inline.}                 = (0x90.get_key_state and 0x0001) != 0
+    proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
+    proc `title=`*(Δ; title: auto) {.inline discardable.} = discard $(title).newWideCString.setConsoleTitle
+    proc `title`*(Δ): string {.inline.} =
         let buffer = cast[WideCString](array[max_buf, Utf16Char].new)
         discard buffer.getConsoleTitle max_buf
         return $buffer
@@ -92,11 +92,4 @@ when not defined(con):
 #.}
 
 # ==Testing code==
-when isMainModule:
-    con.title = "•Con/IO test•"
-    for t in 0..8:
-        con.setCursorPosition t, t
-        con.foregroundcolor = cast[con.colors](t + 7)
-        con.log "Hello, world !"
-    con.beep()
-    discard con.read_key 
+when isMainModule: include "../examples/hello_world.nim" 
