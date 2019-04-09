@@ -3,7 +3,7 @@
 # Developed in 2019 by V.A. Guevara
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 from strutils import join
-import terminal, unicode
+import terminal, unicode, encodings
 export unicode
 
 # [OS-dependent bindings]
@@ -31,7 +31,10 @@ when not defined(con):
         (fgCyan, true), (fgRed, true), (fgMagenta, true), (fgYellow, true), (fgWhite, true)]
     var 
         (fg_color, bg_color) = (colorNames.gray, colorNames.black)
-        cur_visible = true
+        cur_visible          = true
+    let
+        out_conv             = encodings.open("CP866", "UTF-8")
+        in_conv              = encodings.open("UTF-8", "CP866")
     using
         Δ:      type con
         list:   varargs[auto, `$`]
@@ -43,12 +46,13 @@ when not defined(con):
     proc input*(Δ): File {.inline.}  = stdin
 
     # •Output•
-    proc write*(Δ, list): auto {.inline.}      = con.output.write list
+    proc write*(Δ, list): auto {.inline.}      =
+        for entry in list: con.output.write out_conv.convert entry
     proc write_line*(Δ, list): auto {.inline.} = con.write list; con.write '\n'
     proc log*(Δ, list): auto {.inline.}        = con.write_line list.join " "
 
     # •Input•
-    proc readline*(Δ): string {.discardable inline.}              = con.input.readLine
+    proc readline*(Δ): string {.discardable inline.}              = in_conv.convert con.input.readLine
     proc read*(Δ): int16 {.discardable inline.}                   = getChar().int16
     proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = 
         (if echoed: get_echoed_char() else: con.read()).Rune
