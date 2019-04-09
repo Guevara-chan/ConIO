@@ -4,6 +4,6 @@ Developed mostly for personal usage, it aims to become full-stack replacement fo
 ❗ Currently only compiles on Windows systems ❗
 
 # •Featuræ•
-* Prioritized Unicode support.
 * Standartized coloration support.
-* Enforced prefix (`con.`) isolation.
+* Enforced prefix (`con.`) API isolation.
+* Unicode>ANSI priority for both input and output.
