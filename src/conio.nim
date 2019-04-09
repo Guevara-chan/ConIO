@@ -46,10 +46,11 @@ when not defined(con):
     proc input*(Δ): File {.inline.}  = stdin
 
     # •Output•
-    proc write*(Δ, list): auto {.inline.}      =
-        for entry in list: con.output.write out_conv.convert entry
-    proc write_line*(Δ, list): auto {.inline.} = con.write list; con.write '\n'
-    proc log*(Δ, list): auto {.inline.}        = con.write_line list.join " "
+    template write*(_: type con, entry: string) = con.output.write(out_conv.convert(entry))
+    proc write*(Δ, list): auto {.inline.}     =
+        for entry in list: con.write entry
+    proc write_line*(Δ; t: auto) {.inline.}   = con.write t; con.write '\n'
+    proc log*(Δ, list) {.inline.}             = con.write_line list.join " "
 
     # •Input•
     proc readline*(Δ): string {.discardable inline.}              = in_conv.convert con.input.readLine
