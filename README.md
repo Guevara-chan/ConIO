@@ -5,5 +5,7 @@ Developed mostly for personal usage, it aims to become full-stack replacement fo
 
 # •Featuræ•
 * Standartized coloration support.
+* Out-of-box getter/setter for title.
 * Enforced prefix (`con.`) API isolation.
 * Full cyrillics support for both input and output.
+
