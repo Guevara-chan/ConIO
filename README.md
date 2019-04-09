@@ -6,4 +6,4 @@ Developed mostly for personal usage, it aims to become full-stack replacement fo
 # •Featuræ•
 * Standartized coloration support.
 * Enforced prefix (`con.`) API isolation.
-* Unicode>ANSI priority for both input and output.
+* Full cyreyllics support for both input and output.
