@@ -5,9 +5,9 @@ Full compatibility is not prioritized at given moment, but desirable in future.
 
 # •Featuræ•
 * Standartized coloration support.
-* Out-of-box getter/setter for title.
 * Enforced prefix (`con.`) API isolation.
-* Full cyrillics support for both input and output.
+* Extended ASCII support for both input and output.
+* Getters/setters to control teminal title and visibility.
 
 # •Remark•
 Since __Con/IO__ was developed mainly for internal usage, no documentation will likely be included before v0.3.  
