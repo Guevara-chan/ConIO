@@ -4,6 +4,7 @@
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 from strutils import join
 import terminal, unicode, encodings, encodings_aux
+export unicode
 
 # [OS-dependent bindings]
 when defined(windows):
