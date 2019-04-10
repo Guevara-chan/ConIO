@@ -17,6 +17,9 @@ when defined(windows):
     proc get_echoed_char(): cint {.header: "<conio.h>", importc: "_getwche".}
     proc get_console_output_cp(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
     proc get_console_input_cp(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleCP".}
+    proc get_console_window(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
+    proc show_window(win: int, flags: int): cint {.stdcall, dynlib: "user32", importc: "ShowWindow".}
+    proc is_window_visible(win: int): cint {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -44,6 +47,7 @@ when not defined(con):
     # •Handles•
     proc output*(Δ): File {.inline.} = stdout
     proc input*(Δ): File {.inline.}  = stdin
+    proc window*(Δ): int {.inline.}  = get_console_window().int
 
     # •Output•
     proc write*(Δ, list): auto {.inline.}   =
@@ -76,7 +80,9 @@ when not defined(con):
     proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.}     = con.output.setCursorPos(left, top)
     proc window_width*(Δ): int {.inline.}                          = terminalWidth()
     proc window_height*(Δ): int {.inline.}                         = terminalHeight()
+    proc visible*(Δ): bool {.inline.}                              = con.window.is_window_visible()
     proc cursor_visible*(Δ): bool {.inline.}                       = cur_visible
+    proc `visible=`*(Δ; val: bool) {.inline.}                      = discard con.window.show_window(val.int)
     proc `cursor_visible=`*(Δ; val: bool) {.discardable inline.}   =
         if val: hideCursor() else: showCursor()
         cur_visible = val
