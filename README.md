@@ -11,4 +11,4 @@ Full compatibility is not prioritized at given moment, but desirable in future.
 
 # •Remark•
 Since __Con/IO__ was developed mainly for internal usage, no documentation will likely be included until version 0.3.  
-Provided examples and reading original .NET docs is a way to understand how to use it right now.
+Provided examples and reading original .NET docs is a way to understand how to use this lib right now.
