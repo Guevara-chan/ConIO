@@ -15,8 +15,6 @@ when defined(windows):
     proc get_key_state(code: int): cint {.stdcall, dynlib: "user32", importc: "GetKeyState".}
     proc get_char(): cint {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint {.header: "<conio.h>", importc: "_getwche".}
-    proc set_console_output_cp(codepage: cint): cint {. stdcall, dynlib: "kernel32", importc: "SetConsoleOutputCP".}
-    proc get_console_output_cp(): cint {. stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -34,9 +32,7 @@ when not defined(con):
     var 
         (fg_color, bg_color) = (colorNames.gray, colorNames.black)
         cur_visible          = true
-    let
-        out_conv             = encodings.open("CP866", "UTF-8")
-        in_conv              = encodings.open("UTF-8", "CP866")
+        out_conv, in_conv: EncodingConverter
     using
         Δ:      type con
         list:   varargs[auto, `$`]
@@ -96,6 +92,8 @@ when not defined(con):
     # --Pre-init goes here:
     con.resetColor()
     con.cursorVisible = true
+    out_conv = encodings.open("CP866", "UTF-8")
+    in_conv = encodings.open("UTF-8", "CP866")
 #.}
 
 # ==Testing code==
