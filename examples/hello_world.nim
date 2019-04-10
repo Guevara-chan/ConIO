@@ -11,4 +11,5 @@ for t in 0..8:
     con.foreground_color = cast[con.colors](t + 7)
     con.log "Hello, world ! Привет, мир."
 con.beep()
-con.read_key 
+con.read_key
+con.reset_color 

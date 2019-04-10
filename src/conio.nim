@@ -3,8 +3,7 @@
 # Developed in 2019 by V.A. Guevara
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 from strutils import join
-import terminal, unicode, encodings
-export unicode
+import terminal, unicode, encodings, encodings_aux
 
 # [OS-dependent bindings]
 when defined(windows):
@@ -15,6 +14,8 @@ when defined(windows):
     proc get_key_state(code: int): cint {.stdcall, dynlib: "user32", importc: "GetKeyState".}
     proc get_char(): cint {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint {.header: "<conio.h>", importc: "_getwche".}
+    proc get_console_output_cp(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
+    proc get_console_input_cp(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleCP".}
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -80,20 +81,22 @@ when not defined(con):
         cur_visible = val
 
     # •Misc•
+    proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
     proc caps_lock*(Δ): bool {.inline.}                   = (0x14.get_key_state and 0x0001) != 0
     proc number_lock*(Δ): bool {.inline.}                 = (0x90.get_key_state and 0x0001) != 0
-    proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
-    proc `title=`*(Δ; title: auto) {.inline discardable.} = discard $(title).newWideCString.setConsoleTitle
-    proc `title`*(Δ): string {.inline.} =
+    proc output_encoding*(Δ): string {.inline.}           = get_console_output_cp().codePageToName
+    proc input_encoding*(Δ): string {.inline.}            = get_console_input_cp().codePageToName
+    proc title*(Δ): string {.inline.}                     =
         let buffer = cast[WideCString](array[max_buf, Utf16Char].new)
         discard buffer.getConsoleTitle max_buf
         return $buffer
+    proc `title=`*(Δ; title: auto) {.inline.}             = discard $(title).newWideCString.setConsoleTitle
 
     # --Pre-init goes here:
     con.resetColor()
     con.cursorVisible = true
-    out_conv = encodings.open("CP866", "UTF-8")
-    in_conv = encodings.open("UTF-8", "CP866")
+    out_conv = encodings.open(con.output_encoding, "UTF-8")
+    in_conv = encodings.open("UTF-8", con.input_encoding)
 #.}
 
 # ==Testing code==
