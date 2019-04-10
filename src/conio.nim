@@ -96,9 +96,7 @@ when not defined(con):
     # --Pre-init goes here:
     con.resetColor()
     con.cursorVisible = true
-    echo codePageToName()
-    con.readKey
 #.}
 
 # ==Testing code==
-when isMainModule: include "../examples/hello_world.nim" 
+when isMainModule: include "../examples/hello_world.nim"
