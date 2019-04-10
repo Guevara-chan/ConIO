@@ -1,6 +1,6 @@
 # •Sum•
 __Con/IO__ is a lightwight terminal library, made to recreate [Console](https://docs.microsoft.com/ru-ru/dotnet/api/system.console) API for Nim and fix `std\terminal` issues.  
-Full compatibility is not prioritized at given moment, but desirable as future.  
+Full compatibility is not prioritized at given moment, but desirable in future.  
 ❗ Currently only compiles on Windows systems ❗
 
 # •Featuræ•
