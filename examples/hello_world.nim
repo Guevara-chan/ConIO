@@ -5,8 +5,9 @@
 import "../src/conio"
 
 con.title = "•Con/IO test•"
+con.clear()
 for t in 0..8:
-    con.setCursorPosition t, t
+    con.setCursorPosition t * 2, t
     con.foregroundcolor = cast[con.colors](t + 7)
     con.log "Hello, world ! Привет, мир."
 con.beep()

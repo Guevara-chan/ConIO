@@ -15,6 +15,8 @@ when defined(windows):
     proc get_key_state(code: int): cint {.stdcall, dynlib: "user32", importc: "GetKeyState".}
     proc get_char(): cint {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint {.header: "<conio.h>", importc: "_getwche".}
+    proc set_console_output_cp(codepage: cint): cint {. stdcall, dynlib: "kernel32", importc: "SetConsoleOutputCP".}
+    proc get_console_output_cp(codepage: cint): cint {. stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
