@@ -16,7 +16,7 @@ when defined(windows):
     proc get_char(): cint {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint {.header: "<conio.h>", importc: "_getwche".}
     proc set_console_output_cp(codepage: cint): cint {. stdcall, dynlib: "kernel32", importc: "SetConsoleOutputCP".}
-    proc get_console_output_cp(codepage: cint): cint {. stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
+    proc get_console_output_cp(): cint {. stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -96,6 +96,8 @@ when not defined(con):
     # --Pre-init goes here:
     con.resetColor()
     con.cursorVisible = true
+    echo codePageToName()
+    con.readKey
 #.}
 
 # ==Testing code==
