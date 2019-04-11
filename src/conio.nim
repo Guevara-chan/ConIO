@@ -9,6 +9,16 @@ export unicode
 # [OS-dependent bindings]
 when defined(windows):
     const max_buf = 256
+    type
+        Coord = object
+            x, y: int16
+        SmallRect = object
+            left, yop, right, bottom: int16
+        BufferInfo = object
+            size, cursor_pos: Coord
+            attribs:          int16
+            window:           SmallRect
+            max_win_size:     Coord
     proc set_console_title(title: WideCString): cint {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
     proc get_console_title(title: WideCString, size: int): cint {.stdcall,dynlib:"kernel32",importc:"GetConsoleTitleW".}
     proc beep(freq: int, duration: int): cint {.stdcall, dynlib: "kernel32", importc: "Beep".}
@@ -20,6 +30,13 @@ when defined(windows):
     proc get_console_window(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
     proc show_window(win: int, flags: int): cint {.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc is_window_visible(win: int): cint {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
+    proc get_std_handle(flag: int): File {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
+    proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
+        {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
+    template buffer_info(): BufferInfo =
+        var buf: BufferInfo
+        echo get_std_handle(-11).get_console_buffer_info(buf.addr)
+        buf
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -56,8 +73,8 @@ when not defined(con):
     proc log*(Δ, list) {.inline.}           = con.write_line list.join " "
 
     # •Input•
-    proc readline*(Δ): string {.discardable inline.}              = in_conv.convert con.input.readLine
-    proc read*(Δ): int16 {.discardable inline.}                   = getChar().int16
+    proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
+    proc read*(Δ): int16 {.discardable inline.}                    = getChar().int16
     proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = 
         (if echoed: get_echoed_char() else: con.read()).Rune
 
@@ -75,15 +92,19 @@ when not defined(con):
         bg_color = color
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
+    # •Sizing•
+    proc window_width*(Δ): int {.inline.}  = terminalWidth()
+    proc window_height*(Δ): int {.inline.} = terminalHeight()
+    proc buffer_width*(Δ): int {.inline.}  = buffer_info().size.x
+    proc buffer_height*(Δ): int {.inline.} = buffer_info().size.x
+
     # •Advanced controls•
-    proc clear*(Δ) {.inline.}                                      = eraseScreen()
-    proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.}     = con.output.setCursorPos(left, top)
-    proc window_width*(Δ): int {.inline.}                          = terminalWidth()
-    proc window_height*(Δ): int {.inline.}                         = terminalHeight()
-    proc visible*(Δ): bool {.inline.}                              = con.window.is_window_visible()
-    proc cursor_visible*(Δ): bool {.inline.}                       = cur_visible
-    proc `visible=`*(Δ; val: bool) {.inline.}                      = discard con.window.show_window(val.int)
-    proc `cursor_visible=`*(Δ; val: bool) {.discardable inline.}   =
+    proc clear*(Δ) {.inline.}                                  = eraseScreen()
+    proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.} = con.output.setCursorPos(left, top)
+    proc visible*(Δ): bool {.inline.}                          = con.window.is_window_visible()
+    proc cursor_visible*(Δ): bool {.inline.}                   = cur_visible
+    proc `visible=`*(Δ; val: bool) {.inline.}                  = discard con.window.show_window(val.int)
+    proc `cursor_visible=`*(Δ; val: bool) {.inline.}           =
         if val: hideCursor() else: showCursor()
         cur_visible = val
 
@@ -108,3 +129,4 @@ when not defined(con):
 
 # ==Testing code==
 when isMainModule: include "../examples/hello_world.nim"
+con.log con.window_width
