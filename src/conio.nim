@@ -30,12 +30,14 @@ when defined(windows):
     proc get_console_window(): cint {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
     proc show_window(win: int, flags: int): cint {.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc is_window_visible(win: int): cint {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
-    proc get_std_handle(flag: int): File {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
+    proc get_std_handle(flag: int = -11): File {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
     proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
+    proc set_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
+        {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferInfo".}
     template buffer_info(): BufferInfo =
         var buf: BufferInfo
-        discard get_std_handle(-11).get_console_buffer_info(buf.addr)
+        discard get_std_handle().get_console_buffer_info(buf.addr)
         buf
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
@@ -102,6 +104,8 @@ when not defined(con):
     proc clear*(Δ) {.inline.}                                  = eraseScreen()
     proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.} = con.output.setCursorPos(left, top)
     proc visible*(Δ): bool {.inline.}                          = con.window.is_window_visible()
+    proc cursor_top*(Δ): int {.inline.}                        = buffer_info().cursor_pos.y
+    proc cursor_left*(Δ): int {.inline.}                       = buffer_info().cursor_pos.x
     proc cursor_visible*(Δ): bool {.inline.}                   = cur_visible
     proc `visible=`*(Δ; val: bool) {.inline.}                  = discard con.window.show_window(val.int)
     proc `cursor_visible=`*(Δ; val: bool) {.inline.}           =
