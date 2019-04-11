@@ -35,7 +35,7 @@ when defined(windows):
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
     template buffer_info(): BufferInfo =
         var buf: BufferInfo
-        echo get_std_handle(-11).get_console_buffer_info(buf.addr)
+        discard get_std_handle(-11).get_console_buffer_info(buf.addr)
         buf
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
@@ -93,8 +93,8 @@ when not defined(con):
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
     # •Sizing•
-    proc window_width*(Δ): int {.inline.}  = terminalWidth()
-    proc window_height*(Δ): int {.inline.} = terminalHeight()
+    proc window_width*(Δ): int {.inline.}  = buffer_info().window.right + 1
+    proc window_height*(Δ): int {.inline.} = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}  = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.} = buffer_info().size.x
 
@@ -129,4 +129,3 @@ when not defined(con):
 
 # ==Testing code==
 when isMainModule: include "../examples/hello_world.nim"
-con.log con.window_width
