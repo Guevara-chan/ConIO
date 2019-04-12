@@ -109,6 +109,8 @@ when not defined(con):
     proc top*(cur): int {.inline.}                             = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                            = buffer_info().cursor_pos.x
     proc visible*(cur): bool {.inline.}                        = cur_visible
+    proc `top=`*(cur; y: int) {.inline.}                       = con.set_cursor_position(con.cursor.x, y)
+    proc `left=`*(cur; x: int) {.inline.}                      = con.set_cursor_position(x, con.cursor.y)
     proc `visible=`*(cur; val: bool) {.inline.}                =
         if val: hideCursor() else: showCursor()
         cur_visible = val
