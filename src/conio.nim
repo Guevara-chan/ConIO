@@ -101,7 +101,8 @@ when not defined(con):
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.}  = 
-        dicard get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16)
+        if not get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16):
+            raise newException(Exception, "Invalid buffer size provided")
     proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
     proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
@@ -138,7 +139,6 @@ when not defined(con):
     con.cursor.visible = true
     out_conv = encodings.open(con.output_encoding, "UTF-8")
     in_conv  = encodings.open("UTF-8", con.input_encoding)
-    con.set_buffer_size(120, 20)
 #.}
 
 # ==Testing code==
