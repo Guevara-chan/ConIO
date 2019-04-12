@@ -7,7 +7,7 @@ Full compatibility is not prioritized at given moment, but desirable in future.
 * Standartized coloration support.
 * Enforced prefix (`con.`) API isolation.
 * Extended ASCII support for both input and output.
-* Getters/setters to control teminal title and visibility.
+* Getters/setters to manage terminal title, buffer size and visibility.
 
 # •Remark•
 Since __Con/IO__ was developed mainly for internal usage, no documentation will likely be included before v0.3.  
