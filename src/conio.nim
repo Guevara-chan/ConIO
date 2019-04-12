@@ -107,6 +107,8 @@ when not defined(con):
     proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.}              = buffer_info().size.y
+    proc `buffer_width=`*(Δ, w: int) {.inline.}         = con.set_buffer_size(w, con.buffer_height)
+    proc `buffer_height=`*(Δ, h: int) {.inline.}        = con.set_buffer_size(con.buffer_width, h)
 
     # •Cursor controls•
     template cursor*(_: type con): auto                   = con_cursor
