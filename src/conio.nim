@@ -31,6 +31,8 @@ when defined(windows):
     proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
     proc get_std_handle(flag: int = -11): File          {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
+    proc set_console_buffer_size(cout: File, size: Coord): bool 
+        {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
     proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
     proc set_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
@@ -98,7 +100,8 @@ when not defined(con):
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
     # •Sizing•
-    proc set_buffer_size*(Δ, w=120, h=9001) {.inline.}  = 
+    proc set_buffer_size*(Δ; w=120, h=9001) {.inline.}  = 
+        dicard get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16)
     proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
     proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
@@ -135,6 +138,7 @@ when not defined(con):
     con.cursor.visible = true
     out_conv = encodings.open(con.output_encoding, "UTF-8")
     in_conv  = encodings.open("UTF-8", con.input_encoding)
+    con.set_buffer_size(120, 20)
 #.}
 
 # ==Testing code==
