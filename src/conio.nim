@@ -19,6 +19,9 @@ when defined(windows):
             attribs:          int16
             window:           SmallRect
             max_win_size:     Coord
+        CursorInfo = object
+            size:             int
+            visible:          bool
     proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
     proc set_console_title(title: WideCString): cint    {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
@@ -31,16 +34,22 @@ when defined(windows):
     proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
     proc get_std_handle(flag: int = -11): File          {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
-    proc set_console_buffer_size(cout: File, size: Coord): bool 
-        {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
+    proc get_cursor_info(cout: File, info: ptr CursorInfo): bool
+        {.stdcall, dynlib: "kernel32", importc: "GetConsoleCursorInfo".}
     proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
     proc set_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferInfo".}
+    proc set_console_buffer_size(cout: File, size: Coord): bool 
+        {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
+    template cursor_info(): CursorInfo =
+        var info: CursorInfo
+        discard get_std_handle().get_cursor_info(info.addr)
+        info
     template buffer_info(): BufferInfo =
-        var buf: BufferInfo
-        discard get_std_handle().get_console_buffer_info(buf.addr)
-        buf
+        var info: BufferInfo
+        discard get_std_handle().get_console_buffer_info(info.addr)
+        info
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
@@ -58,7 +67,6 @@ when not defined(con):
         (fgCyan, true), (fgRed, true), (fgMagenta, true), (fgYellow, true), (fgWhite, true)]
     var 
         (fg_color, bg_color) = (colorNames.gray, colorNames.black)
-        cur_visible          = true
         out_conv, in_conv: EncodingConverter
     using
         Δ:      type con
@@ -115,12 +123,12 @@ when not defined(con):
     proc set_cursor_position*(Δ; x = 0, y = 0) {.inline.} = con.output.setCursorPos(x, y)
     proc top*(cur): int {.inline.}                        = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                       = buffer_info().cursor_pos.x
-    proc visible*(cur): bool {.inline.}                   = cur_visible
+    proc visible*(cur): bool {.inline.}                   = cursor_info().visible
+    proc height*(cur): int {.inline.}                     = cursor_info().size
     proc `top=`*(cur; y: int) {.inline.}                  = con.set_cursor_position(con.cursor.x, y)
     proc `left=`*(cur; x: int) {.inline.}                 = con.set_cursor_position(x, con.cursor.y)
     proc `visible=`*(cur; val: bool) {.inline.}           =
-        if val: hideCursor() else: showCursor()
-        cur_visible = val
+        if val: showCursor() else: hideCursor()
 
     # •Misc•
     proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
@@ -138,7 +146,6 @@ when not defined(con):
 
     # --Pre-init goes here:
     con.resetColor()
-    con.cursor.visible = true
     out_conv = encodings.open(con.output_encoding, "UTF-8")
     in_conv  = encodings.open("UTF-8", con.input_encoding)
 #.}
