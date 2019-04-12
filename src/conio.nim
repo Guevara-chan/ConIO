@@ -20,8 +20,8 @@ when defined(windows):
             window:           SmallRect
             max_win_size:     Coord
         CursorInfo = object
-            size:             int
-            visible:          bool
+            size:             int32
+            visible:          int32
     proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
     proc set_console_title(title: WideCString): cint    {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
@@ -34,22 +34,23 @@ when defined(windows):
     proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32", importc: "ShowWindow".}
     proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
     proc get_std_handle(flag: int = -11): File          {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
-    proc get_cursor_info(cout: File, info: ptr CursorInfo): bool
+    proc get_cursor_info(cout: File, info: ptr CursorInfo): cint
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleCursorInfo".}
+    proc set_cursor_info(cout: File, info: ptr CursorInfo): cint 
+        {.stdcall, dynlib: "kernel32", importc: "SetConsoleCursorInfo".}
     proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
-    proc set_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
+    proc set_console_buffer_info(cout: File, info: BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferInfo".}
-    proc set_console_buffer_size(cout: File, size: Coord): bool 
+    proc set_console_buffer_size(cout: File, size: Coord): cint 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
-    let cout = get_std_handle()
     template cursor_info(): CursorInfo =
         var info: CursorInfo
-        discard cout.get_cursor_info info.addr
+        discard get_std_handle().get_cursor_info info.addr
         info
     template buffer_info(): BufferInfo =
         var info: BufferInfo
-        discard cout.get_console_buffer_info info.addr
+        discard get_std_handle().get_console_buffer_info info.addr
         info
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
@@ -93,9 +94,10 @@ when not defined(con):
     proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = (if echoed:get_echoed_char() else: con.read).Rune
 
     # •Colors•
-    template colors*(_: type con): auto         = color_names
-    proc foreground_color*(Δ, color) {.inline.} = fg_color
-    proc background_color*(Δ, color) {.inline.} = bg_color
+    template colors*(_: type con): auto            = color_names
+    proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
+    proc foreground_color*(Δ, color) {.inline.}    = fg_color
+    proc background_color*(Δ, color) {.inline.}    = bg_color
     proc `foreground_color=`*(Δ, color) {.inline.} =
         let (shade, bright) = color_impl[color.int]
         con.output.setForegroundColor shade, bright
@@ -104,29 +106,33 @@ when not defined(con):
         let (shade, bright) = color_impl[color.int]
         con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
-    proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.}  = 
-        if not cout.set_console_buffer_size Coord(x: w.int16, y: h.int16):
+        if 0 == get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16):
             raise newException(Exception, "Invalid buffer size provided")
     proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
     proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.}              = buffer_info().size.y
-    proc `buffer_width=`*(Δ, w: int) {.inline.}         = con.set_buffer_size(w, con.buffer_height)
-    proc `buffer_height=`*(Δ, h: int) {.inline.}        = con.set_buffer_size(con.buffer_width, h)
+    proc `buffer_width=`*(Δ; w: int) {.inline.}         = con.set_buffer_size(w, con.buffer_height)
+    proc `buffer_height=`*(Δ; h: int) {.inline.}        = con.set_buffer_size(con.buffer_width, h)
 
     # •Cursor controls•
     template cursor*(_: type con): auto                   = con_cursor
     proc set_cursor_position*(Δ; x = 0, y = 0) {.inline.} = con.output.setCursorPos(x, y)
     proc top*(cur): int {.inline.}                        = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                       = buffer_info().cursor_pos.x
-    proc visible*(cur): bool {.inline.}                   = cursor_info().visible
+    proc visible*(cur): bool {.inline.}                   = cursor_info().visible != 0
     proc height*(cur): int {.inline.}                     = cursor_info().size
     proc `top=`*(cur; y: int) {.inline.}                  = con.set_cursor_position(con.cursor.x, y)
     proc `left=`*(cur; x: int) {.inline.}                 = con.set_cursor_position(x, con.cursor.y)
-    proc `visible=`*(cur; val: bool) {.inline.}           = (if val: showCursor() else: hideCursor())
+    proc `visible=`*(cur; val: bool) {.inline.}           =
+        var t = CursorInfo(size: con.cursor.height.int32, visible: val.int32)
+        discard get_std_handle().set_cursor_info t.addr
+    proc `height=`*(cur; h: int) {.inline.}               =
+        var t = CursorInfo(size: h.int32, visible: con.cursor.visible.int32)
+        discard get_std_handle().set_cursor_info t.addr
 
     # •Misc•
     proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
