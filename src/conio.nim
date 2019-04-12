@@ -19,12 +19,12 @@ when defined(windows):
             attribs:          int16
             window:           SmallRect
             max_win_size:     Coord
+    proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
+    proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
     proc set_console_title(title: WideCString): cint    {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
     proc get_console_title(title: WideCString, size: int): cint {.stdcall,dynlib:"kernel32",importc:"GetConsoleTitleW".}
     proc beep(freq: int, duration: int): cint           {.stdcall, dynlib: "kernel32", importc: "Beep".}
     proc get_key_state(code: int): cint                 {.stdcall, dynlib: "user32", importc: "GetKeyState".}
-    proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
-    proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
     proc get_console_output_cp(): cint                  {.stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
     proc get_console_input_cp(): cint                   {.stdcall, dynlib: "kernel32", importc: "GetConsoleCP".}
     proc get_console_window(): cint                     {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
@@ -46,7 +46,8 @@ when not defined(con):
     # --Service definitions:
     type 
         con* {.package.} = object
-        color_names = enum
+        cursor           = object
+        color_names      = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
     const
@@ -59,6 +60,7 @@ when not defined(con):
         out_conv, in_conv: EncodingConverter
     using
         Δ:      type con
+        cur:    type cursor
         list:   varargs[auto, `$`]
         color:  color_names
         
@@ -73,6 +75,7 @@ when not defined(con):
         for entry in list: con.output.write out_conv.convert entry
     proc write_line*(Δ; t: auto) {.inline.} = con.write t; con.write '\n'
     proc log*(Δ, list) {.inline.}           = con.write_line list.join " "
+    proc clear*(Δ) {.inline.}               = eraseScreen()
 
     # •Input•
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
@@ -100,15 +103,13 @@ when not defined(con):
     proc buffer_width*(Δ): int {.inline.}  = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.} = buffer_info().size.x
 
-    # •Advanced controls•
-    proc clear*(Δ) {.inline.}                                  = eraseScreen()
+    # •Cursor controls•
+    template cursor*(_: type con): auto                        = cursor
     proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.} = con.output.setCursorPos(left, top)
-    proc visible*(Δ): bool {.inline.}                          = con.window.is_window_visible()
-    proc cursor_top*(Δ): int {.inline.}                        = buffer_info().cursor_pos.y
-    proc cursor_left*(Δ): int {.inline.}                       = buffer_info().cursor_pos.x
-    proc cursor_visible*(Δ): bool {.inline.}                   = cur_visible
-    proc `visible=`*(Δ; val: bool) {.inline.}                  = discard con.window.show_window(val.int)
-    proc `cursor_visible=`*(Δ; val: bool) {.inline.}           =
+    proc top*(cur): int {.inline.}                             = buffer_info().cursor_pos.y
+    proc left*(cur): int {.inline.}                            = buffer_info().cursor_pos.x
+    proc visible*(cur): bool {.inline.}                        = cur_visible
+    proc `visible=`*(cur; val: bool) {.inline.}                =
         if val: hideCursor() else: showCursor()
         cur_visible = val
 
@@ -118,10 +119,12 @@ when not defined(con):
     proc number_lock*(Δ): bool {.inline.}                 = (0x90.get_key_state and 0x0001) != 0
     proc output_encoding*(Δ): string {.inline.}           = get_console_output_cp().codePageToName
     proc input_encoding*(Δ): string {.inline.}            = get_console_input_cp().codePageToName
+    proc visible*(Δ): bool {.inline.}                     = con.window.is_window_visible()
     proc title*(Δ): string {.inline.}                     =
         let buffer = cast[WideCString](array[max_buf, Utf16Char].new)
         discard buffer.getConsoleTitle max_buf
         return $buffer
+    proc `visible=`*(Δ; val: bool) {.inline.}             = discard con.window.show_window(val.int)
     proc `title=`*(Δ; title: auto) {.inline.}             = discard $(title).newWideCString.setConsoleTitle
 
     # --Pre-init goes here:
