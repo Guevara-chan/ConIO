@@ -42,13 +42,14 @@ when defined(windows):
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferInfo".}
     proc set_console_buffer_size(cout: File, size: Coord): bool 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
+    let cout = get_std_handle()
     template cursor_info(): CursorInfo =
         var info: CursorInfo
-        discard get_std_handle().get_cursor_info(info.addr)
+        discard cout.get_cursor_info info.addr
         info
     template buffer_info(): BufferInfo =
         var info: BufferInfo
-        discard get_std_handle().get_console_buffer_info(info.addr)
+        discard cout.get_console_buffer_info info.addr
         info
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
@@ -81,8 +82,7 @@ when not defined(con):
     proc window*(Δ): int {.inline.}  = get_console_window().int
 
     # •Output•
-    proc write*(Δ, list): auto {.inline.}   =
-        for entry in list: con.output.write out_conv.convert entry
+    proc write*(Δ, list): auto {.inline.}   = (for entry in list: con.output.write out_conv.convert entry)
     proc write_line*(Δ; t: auto) {.inline.} = con.write t; con.write '\n'
     proc log*(Δ, list) {.inline.}           = con.write_line list.join " "
     proc clear*(Δ) {.inline.}               = eraseScreen()
@@ -90,8 +90,7 @@ when not defined(con):
     # •Input•
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
     proc read*(Δ): int16 {.discardable inline.}                    = getChar().int16
-    proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = 
-        (if echoed: get_echoed_char() else: con.read()).Rune
+    proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = (if echoed:get_echoed_char() else: con.read).Rune
 
     # •Colors•
     template colors*(_: type con): auto         = color_names
@@ -109,7 +108,7 @@ when not defined(con):
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.}  = 
-        if not get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16):
+        if not cout.set_console_buffer_size Coord(x: w.int16, y: h.int16):
             raise newException(Exception, "Invalid buffer size provided")
     proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
     proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
@@ -127,8 +126,7 @@ when not defined(con):
     proc height*(cur): int {.inline.}                     = cursor_info().size
     proc `top=`*(cur; y: int) {.inline.}                  = con.set_cursor_position(con.cursor.x, y)
     proc `left=`*(cur; x: int) {.inline.}                 = con.set_cursor_position(x, con.cursor.y)
-    proc `visible=`*(cur; val: bool) {.inline.}           =
-        if val: showCursor() else: hideCursor()
+    proc `visible=`*(cur; val: bool) {.inline.}           = (if val: showCursor() else: hideCursor())
 
     # •Misc•
     proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
