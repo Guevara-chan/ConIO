@@ -98,20 +98,21 @@ when not defined(con):
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
 
     # •Sizing•
-    proc window_width*(Δ): int {.inline.}  = buffer_info().window.right + 1
-    proc window_height*(Δ): int {.inline.} = buffer_info().window.bottom + 1
-    proc buffer_width*(Δ): int {.inline.}  = buffer_info().size.x
-    proc buffer_height*(Δ): int {.inline.} = buffer_info().size.x
+    proc set_buffer_size*(Δ, w=120, h=9001) {.inline.}  = 
+    proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
+    proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
+    proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
+    proc buffer_height*(Δ): int {.inline.}              = buffer_info().size.y
 
     # •Cursor controls•
-    template cursor*(_: type con): auto                        = con_cursor
-    proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.} = con.output.setCursorPos(left, top)
-    proc top*(cur): int {.inline.}                             = buffer_info().cursor_pos.y
-    proc left*(cur): int {.inline.}                            = buffer_info().cursor_pos.x
-    proc visible*(cur): bool {.inline.}                        = cur_visible
-    proc `top=`*(cur; y: int) {.inline.}                       = con.set_cursor_position(con.cursor.x, y)
-    proc `left=`*(cur; x: int) {.inline.}                      = con.set_cursor_position(x, con.cursor.y)
-    proc `visible=`*(cur; val: bool) {.inline.}                =
+    template cursor*(_: type con): auto                   = con_cursor
+    proc set_cursor_position*(Δ; x = 0, y = 0) {.inline.} = con.output.setCursorPos(x, y)
+    proc top*(cur): int {.inline.}                        = buffer_info().cursor_pos.y
+    proc left*(cur): int {.inline.}                       = buffer_info().cursor_pos.x
+    proc visible*(cur): bool {.inline.}                   = cur_visible
+    proc `top=`*(cur; y: int) {.inline.}                  = con.set_cursor_position(con.cursor.x, y)
+    proc `left=`*(cur; x: int) {.inline.}                 = con.set_cursor_position(x, con.cursor.y)
+    proc `visible=`*(cur; val: bool) {.inline.}           =
         if val: hideCursor() else: showCursor()
         cur_visible = val
 
