@@ -46,7 +46,7 @@ when not defined(con):
     # --Service definitions:
     type 
         con* {.package.} = object
-        cursor           = object
+        con_cursor       = object
         color_names      = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
@@ -60,7 +60,7 @@ when not defined(con):
         out_conv, in_conv: EncodingConverter
     using
         Δ:      type con
-        cur:    type cursor
+        cur:    type con_cursor
         list:   varargs[auto, `$`]
         color:  color_names
         
@@ -104,7 +104,7 @@ when not defined(con):
     proc buffer_height*(Δ): int {.inline.} = buffer_info().size.x
 
     # •Cursor controls•
-    template cursor*(_: type con): auto                        = cursor
+    template cursor*(_: type con): auto                        = con_cursor
     proc set_cursor_position*(Δ; left = 0, top = 0) {.inline.} = con.output.setCursorPos(left, top)
     proc top*(cur): int {.inline.}                             = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                            = buffer_info().cursor_pos.x
@@ -129,9 +129,9 @@ when not defined(con):
 
     # --Pre-init goes here:
     con.resetColor()
-    con.cursorVisible = true
+    con.cursor.visible = true
     out_conv = encodings.open(con.output_encoding, "UTF-8")
-    in_conv = encodings.open("UTF-8", con.input_encoding)
+    in_conv  = encodings.open("UTF-8", con.input_encoding)
 #.}
 
 # ==Testing code==
