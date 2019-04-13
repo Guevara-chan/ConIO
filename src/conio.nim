@@ -63,7 +63,7 @@ when not defined(console):
     type 
         console     = object
         con_cursor  = object
-        color_names = enum
+        con_color   = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
     const
@@ -77,7 +77,7 @@ when not defined(console):
         Δ:      type console
         cur:    type con_cursor
         list:   varargs[auto, `$`]
-        color:  color_names
+        color:  con_color
         
     # --Methods goes here:
     # •Handles•
