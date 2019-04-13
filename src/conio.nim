@@ -95,7 +95,7 @@ when not defined(console):
     # •Input•
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
     proc read*(Δ): int16 {.discardable inline.}                    = getChar().int16
-    proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = (if echoed:get_echoed_char() else: con.read).Rune
+    proc read_key*(Δ; echoed = true): Rune {.discardable inline.}  = (if echoed:get_echoed_char() else: con.read).Rune
     proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
 
     # •Colors•
@@ -120,6 +120,10 @@ when not defined(console):
         var t = SmallRect(top:con.window_top.int16, left:con.window_left.int16, right:w.int16 - 1, bottom:h.int16 - 1)
         if 0 == get_std_handle().set_console_window_info(1, t.addr):
             raise newException(Exception, "Invalid window size provided")
+    proc set_window_position*(Δ; x=0, y=0) {.inline.}  =
+        var t = SmallRect(top:x.int16, left:y.int16, right:con.window_width.int16 - 1, bottom:con.window_height.int16-1)
+        if 0 == get_std_handle().set_console_window_info(1, t.addr):
+            raise newException(Exception, "Invalid window position provided")
     proc window_top*(Δ): int {.inline.}                = buffer_info().window.top
     proc window_left*(Δ): int {.inline.}               = buffer_info().window.left
     proc window_width*(Δ): int {.inline.}              = buffer_info().window.right - con.window_left + 1
