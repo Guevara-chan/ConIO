@@ -61,9 +61,9 @@ else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 when not defined(con):
     # --Service definitions:
     type 
-        console         = object
-        con_cursor       = object
-        color_names      = enum
+        console     = object
+        con_cursor  = object
+        color_names = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
     const
