@@ -121,7 +121,7 @@ when not defined(console):
         if 0 == get_std_handle().set_console_window_info(1, t.addr):
             raise newException(Exception, "Invalid window size provided")
     proc set_window_position*(Δ; x=0, y=0) {.inline.}  =
-        var t = SmallRect(top:x.int16, left:y.int16, right:con.window_width.int16 - 1, bottom:con.window_height.int16-1)
+        var t = SmallRect(top:y.int16, left:x.int16, right:con.window_width.int16 - 1, bottom:con.window_height.int16-1)
         if 0 == get_std_handle().set_console_window_info(1, t.addr):
             raise newException(Exception, "Invalid window position provided")
     proc window_top*(Δ): int {.inline.}                = buffer_info().window.top
