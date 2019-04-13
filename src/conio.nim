@@ -71,7 +71,7 @@ when not defined(console):
         (fgMagenta, false), (fgYellow, false), (fgWhite, false), (fgBlack, true), (fgBlue, true), (fgGreen, true), 
         (fgCyan, true), (fgRed, true), (fgMagenta, true), (fgYellow, true), (fgWhite, true)]
     var 
-        (fg_color, bg_color) = (colorNames.gray, colorNames.black)
+        (fg_color, bg_color) = (con_color.gray, con_color.black)
         out_conv, in_conv: EncodingConverter
     using
         Δ:      type console
@@ -99,7 +99,7 @@ when not defined(console):
     proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
 
     # •Colors•
-    template colors*(_: type con): auto            = color_names
+    template colors*(_: type con): auto            = con_color
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
     proc foreground_color*(Δ, color) {.inline.}    = fg_color
     proc background_color*(Δ, color) {.inline.}    = bg_color
