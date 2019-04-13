@@ -114,7 +114,7 @@ when not defined(con):
         if 0 == get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16):
             raise newException(Exception, "Invalid buffer size provided")
     proc set_window_size*(Δ; w=120, h=30) {.inline.}   =
-        var t = SmallRect(right: w.int16 - 1, bottom: h.int16 - 1)
+        var t = SmallRect(top:con.window_top.int16, left:con.window_left.int16, right:w.int16 - 1, bottom:h.int16 - 1)
         if 0 == get_std_handle().set_console_window_info(1, t.addr):
             raise newException(Exception, "Invalid window size provided")
     proc window_top*(Δ): int {.inline.}                = buffer_info().window.top
@@ -133,8 +133,8 @@ when not defined(con):
     proc left*(cur): int {.inline.}                   = buffer_info().cursor_pos.x
     proc visible*(cur): bool {.inline.}               = cursor_info().visible != 0
     proc height*(cur): int {.inline.}                 = cursor_info().size
-    proc `top=`*(cur; y: int) {.inline.}              = con.set_cursor_position(con.cursor.x, y)
-    proc `left=`*(cur; x: int) {.inline.}             = con.set_cursor_position(x, con.cursor.y)
+    proc `top=`*(cur; y: int) {.inline.}              = con.set_cursor_position(con.cursor.left, y)
+    proc `left=`*(cur; x: int) {.inline.}             = con.set_cursor_position(x, con.cursor.top)
     proc `visible=`*(cur; val: bool) {.inline.}       =
         var t = CursorInfo(size: con.cursor.height.int32, visible: val.int32)
         discard get_std_handle().set_cursor_info t.addr
