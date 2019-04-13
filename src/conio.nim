@@ -24,6 +24,7 @@ when defined(windows):
             visible:          int32
     proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
     proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
+    proc keyboard_hit(): cint                           {.header: "<conio.h>", importc: "_kbhit".}
     proc set_console_title(title: WideCString): cint    {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
     proc get_console_title(title: WideCString, size: int): cint {.stdcall,dynlib:"kernel32",importc:"GetConsoleTitleW".}
     proc beep(freq: int, duration: int): cint           {.stdcall, dynlib: "kernel32", importc: "Beep".}
@@ -94,6 +95,7 @@ when not defined(con):
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
     proc read*(Δ): int16 {.discardable inline.}                    = getChar().int16
     proc read_key*(Δ; echoed = false): Rune {.discardable inline.} = (if echoed:get_echoed_char() else: con.read).Rune
+    proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
 
     # •Colors•
     template colors*(_: type con): auto            = color_names
