@@ -13,7 +13,7 @@ when defined(windows):
         Coord = object
             x, y: int16
         SmallRect = object
-            left, yop, right, bottom: int16
+            left, top, right, bottom: int16
         BufferInfo = object
             size, cursor_pos: Coord
             attribs:          int16
@@ -40,10 +40,12 @@ when defined(windows):
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleCursorInfo".}
     proc get_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleScreenBufferInfo".}
-    proc set_console_buffer_info(cout: File, info: BufferInfo): cint 
+    proc set_console_buffer_info(cout: File, info: ptr BufferInfo): cint 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferInfo".}
     proc set_console_buffer_size(cout: File, size: Coord): cint 
         {.stdcall, dynlib: "kernel32", importc: "SetConsoleScreenBufferSize".}
+    proc set_console_window_info(cout: File, abs: int, rect: ptr SmallRect): cint 
+        {.stdcall, dynlib: "kernel32", importc: "SetConsoleWindowInfo".}
     template cursor_info(): CursorInfo =
         var info: CursorInfo
         discard get_std_handle().get_cursor_info info.addr
@@ -108,45 +110,51 @@ when not defined(con):
         bg_color = color
 
     # •Sizing•
-    proc set_buffer_size*(Δ; w=120, h=9001) {.inline.}  = 
+    proc set_buffer_size*(Δ; w=120, h=9001) {.inline.} = 
         if 0 == get_std_handle().set_console_buffer_size Coord(x: w.int16, y: h.int16):
             raise newException(Exception, "Invalid buffer size provided")
-    proc window_width*(Δ): int {.inline.}               = buffer_info().window.right + 1
-    proc window_height*(Δ): int {.inline.}              = buffer_info().window.bottom + 1
-    proc buffer_width*(Δ): int {.inline.}               = buffer_info().size.x
-    proc buffer_height*(Δ): int {.inline.}              = buffer_info().size.y
-    proc `buffer_width=`*(Δ; w: int) {.inline.}         = con.set_buffer_size(w, con.buffer_height)
-    proc `buffer_height=`*(Δ; h: int) {.inline.}        = con.set_buffer_size(con.buffer_width, h)
+    proc set_window_size*(Δ; w=120, h=30) {.inline.}   =
+        var t = SmallRect(right: w.int16 - 1, bottom: h.int16 - 1)
+        if 0 == get_std_handle().set_console_window_info(1, t.addr):
+            raise newException(Exception, "Invalid window size provided")
+    proc window_top*(Δ): int {.inline.}                = buffer_info().window.top
+    proc window_left*(Δ): int {.inline.}               = buffer_info().window.left
+    proc window_width*(Δ): int {.inline.}              = buffer_info().window.right - con.window_left + 1
+    proc window_height*(Δ): int {.inline.}             = buffer_info().window.bottom - con.window_top + 1
+    proc buffer_width*(Δ): int {.inline.}              = buffer_info().size.x
+    proc buffer_height*(Δ): int {.inline.}             = buffer_info().size.y
+    proc `buffer_width=`*(Δ; w: int) {.inline.}        = con.set_buffer_size(w, con.buffer_height)
+    proc `buffer_height=`*(Δ; h: int) {.inline.}       = con.set_buffer_size(con.buffer_width, h)
 
     # •Cursor controls•
-    template cursor*(_: type con): auto                   = con_cursor
-    proc set_cursor_position*(Δ; x = 0, y = 0) {.inline.} = con.output.setCursorPos(x, y)
-    proc top*(cur): int {.inline.}                        = buffer_info().cursor_pos.y
-    proc left*(cur): int {.inline.}                       = buffer_info().cursor_pos.x
-    proc visible*(cur): bool {.inline.}                   = cursor_info().visible != 0
-    proc height*(cur): int {.inline.}                     = cursor_info().size
-    proc `top=`*(cur; y: int) {.inline.}                  = con.set_cursor_position(con.cursor.x, y)
-    proc `left=`*(cur; x: int) {.inline.}                 = con.set_cursor_position(x, con.cursor.y)
-    proc `visible=`*(cur; val: bool) {.inline.}           =
+    template cursor*(_: type con): auto               = con_cursor
+    proc set_cursor_position*(Δ; x=0, y=0) {.inline.} = con.output.setCursorPos(x, y)
+    proc top*(cur): int {.inline.}                    = buffer_info().cursor_pos.y
+    proc left*(cur): int {.inline.}                   = buffer_info().cursor_pos.x
+    proc visible*(cur): bool {.inline.}               = cursor_info().visible != 0
+    proc height*(cur): int {.inline.}                 = cursor_info().size
+    proc `top=`*(cur; y: int) {.inline.}              = con.set_cursor_position(con.cursor.x, y)
+    proc `left=`*(cur; x: int) {.inline.}             = con.set_cursor_position(x, con.cursor.y)
+    proc `visible=`*(cur; val: bool) {.inline.}       =
         var t = CursorInfo(size: con.cursor.height.int32, visible: val.int32)
         discard get_std_handle().set_cursor_info t.addr
-    proc `height=`*(cur; h: int) {.inline.}               =
+    proc `height=`*(cur; h: int) {.inline.}           =
         var t = CursorInfo(size: h.int32, visible: con.cursor.visible.int32)
         discard get_std_handle().set_cursor_info t.addr
 
     # •Misc•
-    proc beep*(Δ; freq = 800, duration = 200) {.inline.}  = discard freq.beep duration
-    proc caps_lock*(Δ): bool {.inline.}                   = (0x14.get_key_state and 0x0001) != 0
-    proc number_lock*(Δ): bool {.inline.}                 = (0x90.get_key_state and 0x0001) != 0
-    proc output_encoding*(Δ): string {.inline.}           = get_console_output_cp().codePageToName
-    proc input_encoding*(Δ): string {.inline.}            = get_console_input_cp().codePageToName
-    proc visible*(Δ): bool {.inline.}                     = con.window.is_window_visible()
-    proc title*(Δ): string {.inline.}                     =
+    proc beep*(Δ; freq = 800, duration = 200) {.inline.} = discard freq.beep duration
+    proc caps_lock*(Δ): bool {.inline.}                  = (0x14.get_key_state and 0x0001) != 0
+    proc number_lock*(Δ): bool {.inline.}                = (0x90.get_key_state and 0x0001) != 0
+    proc output_encoding*(Δ): string {.inline.}          = get_console_output_cp().codePageToName
+    proc input_encoding*(Δ): string {.inline.}           = get_console_input_cp().codePageToName
+    proc visible*(Δ): bool {.inline.}                    = con.window.is_window_visible()
+    proc title*(Δ): string {.inline.}                    =
         let buffer = cast[WideCString](array[max_buf, Utf16Char].new)
         discard buffer.getConsoleTitle max_buf
         return $buffer
-    proc `visible=`*(Δ; val: bool) {.inline.}             = discard con.window.show_window(val.int)
-    proc `title=`*(Δ; title: auto) {.inline.}             = discard $(title).newWideCString.setConsoleTitle
+    proc `visible=`*(Δ; val: bool) {.inline.}            = discard con.window.show_window(val.int)
+    proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
 
     # --Pre-init goes here:
     con.resetColor()
