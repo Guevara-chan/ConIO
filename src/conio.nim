@@ -126,6 +126,8 @@ when not defined(console):
     proc window_height*(Δ): int {.inline.}             = buffer_info().window.bottom - con.window_top + 1
     proc buffer_width*(Δ): int {.inline.}              = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.}             = buffer_info().size.y
+    proc `window_width=`*(Δ; w: int) {.inline.}        = con.set_window_size(w, con.window_height)
+    proc `window_height=`*(Δ; h: int) {.inline.}       = con.set_window_size(con.window_width, h)
     proc `buffer_width=`*(Δ; w: int) {.inline.}        = con.set_buffer_size(w, con.buffer_height)
     proc `buffer_height=`*(Δ; h: int) {.inline.}       = con.set_buffer_size(con.buffer_width, h)
 
