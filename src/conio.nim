@@ -67,7 +67,7 @@ when not defined(console):
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
     const
-        color_impl = [(fgBlack, false), (fgBlue, false), (fgGreen, false), (fgCyan, false), (fgRed, false), 
+        con_color_impl = [(fgBlack, false), (fgBlue, false), (fgGreen, false), (fgCyan, false), (fgRed, false), 
         (fgMagenta, false), (fgYellow, false), (fgWhite, false), (fgBlack, true), (fgBlue, true), (fgGreen, true), 
         (fgCyan, true), (fgRed, true), (fgMagenta, true), (fgYellow, true), (fgWhite, true)]
     var 
@@ -104,11 +104,11 @@ when not defined(console):
     proc foreground_color*(Δ, color) {.inline.}    = fg_color
     proc background_color*(Δ, color) {.inline.}    = bg_color
     proc `foreground_color=`*(Δ, color) {.inline.} =
-        let (shade, bright) = color_impl[color.int]
+        let (shade, bright) = con_color_impl[color.int]
         con.output.setForegroundColor shade, bright
         fg_color = color
     proc `background_color=`*(Δ, color) {.inline.} =
-        let (shade, bright) = color_impl[color.int]
+        let (shade, bright) = con_color_impl[color.int]
         con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
 
