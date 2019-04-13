@@ -12,3 +12,6 @@ Full compatibility is not prioritized at given moment, but desirable in future.
 # •Remark•
 Since __Con/IO__ was developed mainly for internal usage, no documentation will likely be included before v0.3.  
 Provided examples and reading original .NET docs is a way to understand how to use this lib until then.
+
+# •Brief sample of terminal glorification•
+![image](https://user-images.githubusercontent.com/8768470/56084145-84754180-5e37-11e9-84de-9ecd933a4a37.png)
