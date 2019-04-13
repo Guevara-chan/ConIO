@@ -58,7 +58,7 @@ when defined(windows):
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
-when not defined(con):
+when not defined(console):
     # --Service definitions:
     type 
         console     = object
