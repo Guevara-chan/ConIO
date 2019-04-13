@@ -61,7 +61,7 @@ else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 when not defined(con):
     # --Service definitions:
     type 
-        con* {.package.} = object
+        console         = object
         con_cursor       = object
         color_names      = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
@@ -74,13 +74,14 @@ when not defined(con):
         (fg_color, bg_color) = (colorNames.gray, colorNames.black)
         out_conv, in_conv: EncodingConverter
     using
-        Δ:      type con
+        Δ:      type console
         cur:    type con_cursor
         list:   varargs[auto, `$`]
         color:  color_names
         
     # --Methods goes here:
     # •Handles•
+    template con*(): auto            = console
     proc output*(Δ): File {.inline.} = stdout
     proc input*(Δ): File {.inline.}  = stdin
     proc window*(Δ): int {.inline.}  = get_console_window().int
