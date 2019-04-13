@@ -6,6 +6,8 @@ import "../src/conio"
 
 con.title = "•Con/IO test•"
 con.cursor.height = 100
+con.set_window_size 43, 12
+con.set_buffer_size con.window_width, con.window_height
 con.clear()
 for t in 0..8:
     con.set_cursor_position t * 2, t
