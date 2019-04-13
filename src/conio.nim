@@ -60,6 +60,7 @@ else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 #.{ [Classes]
 when not defined(console):
     # --Service definitions:
+    template con*(): auto = console
     type 
         console     = object
         con_cursor  = object
@@ -81,7 +82,6 @@ when not defined(console):
         
     # --Methods goes here:
     # •Handles•
-    template con*(): auto            = console
     proc output*(Δ): File {.inline.} = stdout
     proc input*(Δ): File {.inline.}  = stdin
     proc window*(Δ): int {.inline.}  = get_console_window().int
