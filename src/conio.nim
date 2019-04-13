@@ -60,7 +60,6 @@ else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 #.{ [Classes]
 when not defined(console):
     # --Service definitions:
-    template con*(): auto = console
     type 
         console     = object
         con_cursor  = object
@@ -79,6 +78,7 @@ when not defined(console):
         cur:    type con_cursor
         list:   varargs[auto, `$`]
         color:  con_color
+    template con*(): auto = console
         
     # --Methods goes here:
     # •Handles•
