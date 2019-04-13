@@ -12,7 +12,7 @@ con.clear()
 for t in 0..8:
     con.cursor.left = t * 2
     con.foreground_color = cast[con.colors](t + 7)
-    con.log "Hello, world ! Привет, мир."
+    con.log "Hello, world !", "Привет, мир."
     con.beep(t * 100)
 con.read_key
 con.reset_color 
