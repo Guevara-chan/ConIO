@@ -22,18 +22,18 @@ when defined(windows):
         CursorInfo = object
             size:             int32
             visible:          int32
-    proc get_char(): cint                               {.header: "<conio.h>", importc: "_getwch".}
-    proc get_echoed_char(): cint                        {.header: "<conio.h>", importc: "_getwche".}
-    proc keyboard_hit(): cint                           {.header: "<conio.h>", importc: "_kbhit".}
+    proc get_char(): cint                               {.header: "<conio.h>",         importc: "_getwch".}
+    proc get_echoed_char(): cint                        {.header: "<conio.h>",         importc: "_getwche".}
+    proc keyboard_hit(): cint                           {.header: "<conio.h>",         importc: "_kbhit".}
     proc set_console_title(title: WideCString): cint    {.stdcall, dynlib: "kernel32", importc: "SetConsoleTitleW".}
     proc get_console_title(title: WideCString, size: int): cint {.stdcall,dynlib:"kernel32",importc:"GetConsoleTitleW".}
     proc beep(freq: int, duration: int): cint           {.stdcall, dynlib: "kernel32", importc: "Beep".}
-    proc get_key_state(code: int): cint                 {.stdcall, dynlib: "user32", importc: "GetKeyState".}
+    proc get_key_state(code: int): cint                 {.stdcall, dynlib: "user32",   importc: "GetKeyState".}
     proc get_console_output_cp(): cint                  {.stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
     proc get_console_input_cp(): cint                   {.stdcall, dynlib: "kernel32", importc: "GetConsoleCP".}
     proc get_console_window(): cint                     {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
-    proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32", importc: "ShowWindow".}
-    proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32", importc: "IsWindowVisible".}
+    proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32",   importc: "ShowWindow".}
+    proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32",   importc: "IsWindowVisible".}
     proc get_std_handle(flag: int = -11): File          {.stdcall, dynlib: "kernel32", importc: "GetStdHandle".}
     proc get_cursor_info(cout: File, info: ptr CursorInfo): cint
         {.stdcall, dynlib: "kernel32", importc: "GetConsoleCursorInfo".}
