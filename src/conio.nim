@@ -3,7 +3,7 @@
 # Developed in 2019 by V.A. Guevara
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
 from strutils import join
-import terminal, unicode, encodings, encodings_aux
+import terminal, unicode, encodings, "encodings_aux.nimi"
 export unicode
 
 # [OS-dependent bindings]
@@ -74,7 +74,7 @@ when not defined(con):
         (fg_color, bg_color) = (con_color.gray, con_color.black)
         out_conv, in_conv: EncodingConverter
     using
-        Δ:     type console
+        Δ:     type con
         cur:   type con_cursor
         list:  varargs[auto, `$`]
         color: con_color
