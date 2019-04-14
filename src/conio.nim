@@ -126,8 +126,8 @@ when not defined(console):
             raise newException(Exception, "Invalid window position provided")
     proc window_top*(Δ): int {.inline.}                = buffer_info().window.top
     proc window_left*(Δ): int {.inline.}               = buffer_info().window.left
-    proc window_width*(Δ): int {.inline.}              = buffer_info().window.right - con.window_left + 1
-    proc window_height*(Δ): int {.inline.}             = buffer_info().window.bottom - con.window_top + 1
+    proc window_width*(Δ): int {.inline.}              = buffer_info().window.right + 1
+    proc window_height*(Δ): int {.inline.}             = buffer_info().window.bottom + 1
     proc buffer_width*(Δ): int {.inline.}              = buffer_info().size.x
     proc buffer_height*(Δ): int {.inline.}             = buffer_info().size.y
     proc `window_top=`*(Δ; y: int) {.inline.}          = con.set_window_position(con.window_left, y)
