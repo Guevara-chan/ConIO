@@ -1,6 +1,7 @@
 # •Sum• [![nimble](https://raw.githubusercontent.com/yglukhov/nimble-tag/master/nimble.png)](https://github.com/yglukhov/nimble-tag)
 __Con/IO__ is a lightwight terminal library, made to recreate [Console](https://docs.microsoft.com/ru-ru/dotnet/api/system.console) API for [Nim](https://nim-lang.org/) and fix `std\terminal` issues.  
 Full compatibility is not prioritized at given moment, but desirable in future.  
+**Installation:** run `nimble install conio` in terminal.
 ❗ Currently only compiles on Windows systems ❗
 
 # •Featuræ•
