@@ -58,12 +58,12 @@ when defined(windows):
 else: {.fatal: "FAULT:: only Windows OS is supported for now !".}
 
 #.{ [Classes]
-when not defined(console):
+when not defined(con):
     # --Service definitions:
     type 
-        console     = object
-        con_cursor  = object
-        con_color   = enum
+        con*       = object
+        con_cursor = object
+        con_color  = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
     const
@@ -78,7 +78,6 @@ when not defined(console):
         cur:    type con_cursor
         list:   varargs[auto, `$`]
         color:  con_color
-    template con*(): auto = console
         
     # --Methods goes here:
     # •Handles•
