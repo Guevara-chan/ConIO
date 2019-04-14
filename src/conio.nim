@@ -74,10 +74,10 @@ when not defined(con):
         (fg_color, bg_color) = (con_color.gray, con_color.black)
         out_conv, in_conv: EncodingConverter
     using
-        Δ:      type console
-        cur:    type con_cursor
-        list:   varargs[auto, `$`]
-        color:  con_color
+        Δ:     type console
+        cur:   type con_cursor
+        list:  varargs[auto, `$`]
+        color: con_color
         
     # --Methods goes here:
     # •Handles•
