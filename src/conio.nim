@@ -112,6 +112,7 @@ when not defined(con):
         let (shade, bright) = con_color_impl[color.int]
         con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
+    proc chalk*(feed: auto, color: con_color): con_chunk {.inline} = feed.Δchunk(color=color.int8)
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.} = 
@@ -171,11 +172,10 @@ when not defined(con):
     # •Chunks mechanics•
     proc Δchunk*(feed: auto, color = -1): con_chunk {.inline.}      =
         when type(feed) is con_chunk: feed else: con_chunk(text: $feed, color: color.int8)
-    proc Δlog(self: con_chunk) {.inline.}                          =
+    proc Δlog*(self: con_chunk) {.inline.}                          =
         if self.color != -1: con.foreground_color = self.color.con_color
         con.output.write out_conv.convert self.text
     proc `$`*(self: con_chunk): string {.inline.}                  = self.text
-    proc chalk*(feed: auto, color: con_color): con_chunk {.inline} = feed.Δchunk(color=color.int8)
 
     # --Pre-init goes here:
     con.resetColor()
