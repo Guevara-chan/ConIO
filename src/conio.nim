@@ -66,6 +66,9 @@ when not defined(con):
         con_color  = enum
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
+        con_chunk  = object
+            text:  string
+            color: int8
     const
         con_color_impl = [(fgBlack, false), (fgBlue, false), (fgGreen, false), (fgCyan, false), (fgRed, false), 
         (fgMagenta, false), (fgYellow, false), (fgWhite, false), (fgBlack, true), (fgBlue, true), (fgGreen, true), 
@@ -76,7 +79,6 @@ when not defined(con):
     using
         Δ:     type con
         cur:   type con_cursor
-        list:  varargs[auto, `$`]
         color: con_color
         
     # --Methods goes here:
@@ -86,10 +88,10 @@ when not defined(con):
     proc window*(Δ): int {.inline.}  = get_console_window().int
 
     # •Output•
-    proc write*(Δ, list): auto {.inline.}   = (for entry in list: con.output.write out_conv.convert entry)
-    proc write_line*(Δ; t: auto) {.inline.} = con.write t; con.write '\n'
-    proc log*(Δ, list) {.inline.}           = con.write_line list.join " "
-    proc clear*(Δ) {.inline.}               = eraseScreen()
+    proc write*(Δ; list: varargs[auto, chunk]) {.inline.} = (for entry in list: entry.log)
+    proc write_line*(Δ; feed: auto) {.inline.}            = con.write feed; con.write '\n'
+    proc log*(Δ; list: varargs[auto, `$`]) {.inline.}     = con.write_line list.join " "
+    proc clear*(Δ) {.inline.}                             = eraseScreen()
 
     # •Input•
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
@@ -165,6 +167,15 @@ when not defined(con):
         return $buffer
     proc `visible=`*(Δ; val: bool) {.inline.}            = discard con.window.show_window(val.int)
     proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
+
+    # •Chunks mechanics•
+    proc chunk*(feed: auto, color = -1): con_chunk {.inline.}      =
+        when type(feed) is con_chunk: feed else: con_chunk(text: $feed, color: color.int8)
+    proc log*(self: con_chunk) {.inline.}                          =
+        if self.color != -1: con.foreground_color = self.color.con_color
+        con.output.write out_conv.convert self.text
+    proc `$`*(self: con_chunk): string {.inline.}                  = self.text
+    proc chalk*(feed: auto, color: con_color): con_chunk {.inline} = feed.chunk(color=color.int8)
 
     # --Pre-init goes here:
     con.resetColor()
