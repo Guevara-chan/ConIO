@@ -15,4 +15,4 @@ Since __Con/IO__ was developed mainly for internal usage, no documentation will 
 Provided examples and reading original .NET docs is a way to understand how to use this lib until then.
 
 # •Brief sample of terminal glorification•
-![image](https://user-images.githubusercontent.com/8768470/56084145-84754180-5e37-11e9-84de-9ecd933a4a37.png)
+![image](https://user-images.githubusercontent.com/8768470/56415641-f2d25d80-6296-11e9-997c-deab92aa44e3.png)
