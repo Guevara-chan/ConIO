@@ -87,9 +87,9 @@ when not defined(con):
         
     # --Methods goes here:
     # •Handles•
-    proc output*(Δ): File {.inline.} = stdout
-    proc input*(Δ): File {.inline.}  = stdin
-    proc window*(Δ): int {.inline.}  = get_console_window().int
+    proc `out`*(Δ): File {.inline.} = stdout
+    proc `in`*(Δ): File {.inline.}  = stdin
+    proc window*(Δ): int {.inline.} = get_console_window().int
 
     # •Output•
     proc write*(Δ; list: varargs[auto, new_chunk]) {.inline.} = (for entry in list: entry.Δlog)
@@ -109,11 +109,11 @@ when not defined(con):
     proc background_color*(Δ): con.colors {.inline.} = bg_color
     proc `foreground_color=`*(Δ, color) {.inline.}   =
         let (shade, bright) = con_color_impl[color.int]
-        con.output.setForegroundColor shade, bright
+        con.out.setForegroundColor shade, bright
         fg_color = color
     proc `background_color=`*(Δ, color) {.inline.}   =
         let (shade, bright) = con_color_impl[color.int]
-        con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
+        con.out.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
     proc fg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(fg=color.int8)
     proc bg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(bg=color.int8)
@@ -144,7 +144,7 @@ when not defined(con):
     proc `buffer_height=`*(Δ; h: int) {.inline.}       = con.set_buffer_size(con.buffer_width, h)
 
     # •Cursor controls•
-    proc set_cursor_position*(Δ; x=0, y=0) {.inline.} = con.output.setCursorPos(x, y)
+    proc set_cursor_position*(Δ; x=0, y=0) {.inline.} = con.out.setCursorPos(x, y)
     proc top*(cur): int {.inline.}                    = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                   = buffer_info().cursor_pos.x
     proc visible*(cur): bool {.inline.}               = cursor_info().visible != 0
@@ -182,7 +182,7 @@ when not defined(con):
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
-        con.output.write out_conv.convert self.text
+        con.out.write out_conv.convert self.text
         (con.foregroundColor, con.backgroundColor) = (fg, bg)
 
     # --Pre-init goes here:
