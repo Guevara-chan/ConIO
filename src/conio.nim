@@ -178,7 +178,7 @@ when not defined(con):
             con_chunk(text: $feed, fg: (if -1 != fg: fg.int8 else: feed.fg), bg: (if -1 != bg: bg.int8 else: feed.bg))
         else: con_chunk(text: $feed, fg: fg.int8, bg: bg.int8)
     proc `$`(self: con.chunk): string {.inline.}                        = self.text
-    proc Δwrite(self: con.chunk)                                        =
+    proc Δwrite*(self: con.chunk)                                       =
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
