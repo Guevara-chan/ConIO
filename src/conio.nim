@@ -92,7 +92,7 @@ when not defined(con):
     proc window*(Δ): int {.inline.} = get_console_window().int
 
     # •Output•
-    proc write*(Δ; list: varargs[auto, new_chunk]) {.inline.} = (for entry in list: entry.Δlog)
+    proc write*(Δ; list: varargs[auto, new_chunk]) {.inline.} = (for entry in list: entry.Δwrite)
     proc write_line*(Δ; feed: auto) {.inline.}                = con.write feed; con.write '\n'
     proc log*(Δ; list: varargs[auto, `$`]) {.inline.}         = con.write_line list.join " "
     proc clear*(Δ) {.inline.}                                 = eraseScreen()
@@ -178,7 +178,7 @@ when not defined(con):
             con_chunk(text: $feed, fg: (if -1 != fg: fg.int8 else: feed.fg), bg: (if -1 != bg: bg.int8 else: feed.bg))
         else: con_chunk(text: $feed, fg: fg.int8, bg: bg.int8)
     proc `$`(self: con.chunk): string {.inline.}                        = self.text
-    proc Δlog(self: con.chunk)                                          =
+    proc Δwrite(self: con.chunk)                                        =
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
