@@ -70,6 +70,9 @@ when not defined(con):
             text: string
             fg:   int8
             bg:   int8
+    template colors*(_: type con): auto = con_color
+    template chunk*(_: type con): auto  = con_chunk
+    template cursor*(_: type con): auto = con_cursor
     const
         con_color_impl = [(fgBlack, false), (fgBlue, false), (fgGreen, false), (fgCyan, false), (fgRed, false), 
         (fgMagenta, false), (fgYellow, false), (fgWhite, false), (fgBlack, true), (fgBlue, true), (fgGreen, true), 
@@ -79,8 +82,8 @@ when not defined(con):
         out_conv, in_conv: EncodingConverter
     using
         Δ:     type con
-        cur:   type con_cursor
-        color: con_color
+        cur:   type con.cursor
+        color: con.colors
         
     # --Methods goes here:
     # •Handles•
@@ -101,7 +104,6 @@ when not defined(con):
     proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
 
     # •Colors•
-    template colors*(_: type con): auto              = con_color
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
     proc foreground_color*(Δ): con.colors {.inline.} = fg_color
     proc background_color*(Δ): con.colors {.inline.} = bg_color
@@ -142,7 +144,6 @@ when not defined(con):
     proc `buffer_height=`*(Δ; h: int) {.inline.}       = con.set_buffer_size(con.buffer_width, h)
 
     # •Cursor controls•
-    template cursor*(_: type con): auto               = con_cursor
     proc set_cursor_position*(Δ; x=0, y=0) {.inline.} = con.output.setCursorPos(x, y)
     proc top*(cur): int {.inline.}                    = buffer_info().cursor_pos.y
     proc left*(cur): int {.inline.}                   = buffer_info().cursor_pos.x
@@ -172,7 +173,6 @@ when not defined(con):
     proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
 
     # •Chunks mechanics•
-    template chunk*(_: type con): auto                                  = con_chunk
     proc new_chunk*(feed: auto, fg = -1, bg = -1): con.chunk {.inline.} =
         when type(feed) is con.chunk:
             con_chunk(text: $feed, fg: (if -1 != fg: fg.int8 else: feed.fg), bg: (if -1 != bg: bg.int8 else: feed.bg))
