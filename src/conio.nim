@@ -182,8 +182,8 @@ when not defined(con):
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
-        (con.foregroundColor, con.backgroundColor) = (fg, bg)
         con.output.write out_conv.convert self.text
+        (con.foregroundColor, con.backgroundColor) = (fg, bg)
 
     # --Pre-init goes here:
     con.resetColor()
