@@ -67,8 +67,9 @@ when not defined(con):
             black, dark_blue, dark_green, dark_cyan, dark_red, dark_magenta, dark_yellow, gray,
             dark_gray, blue, green, cyan, red, magenta, yellow, white
         con_chunk  = object
-            text:  string
-            color: int8
+            text: string
+            fg:   int8
+            bg:   int8
     const
         con_color_impl = [(fgBlack, false), (fgBlue, false), (fgGreen, false), (fgCyan, false), (fgRed, false), 
         (fgMagenta, false), (fgYellow, false), (fgWhite, false), (fgBlack, true), (fgBlue, true), (fgGreen, true), 
@@ -88,10 +89,10 @@ when not defined(con):
     proc window*(Δ): int {.inline.}  = get_console_window().int
 
     # •Output•
-    proc write*(Δ; list: varargs[auto, Δchunk]) {.inline.} = (for entry in list: entry.Δlog)
-    proc write_line*(Δ; feed: auto) {.inline.}             = con.write feed; con.write '\n'
-    proc log*(Δ; list: varargs[auto, `$`]) {.inline.}      = con.write_line list.join " "
-    proc clear*(Δ) {.inline.}                              = eraseScreen()
+    proc write*(Δ; list: varargs[auto, new_chunk]) {.inline.} = (for entry in list: entry.Δlog)
+    proc write_line*(Δ; feed: auto) {.inline.}                = con.write feed; con.write '\n'
+    proc log*(Δ; list: varargs[auto, `$`]) {.inline.}         = con.write_line list.join " "
+    proc clear*(Δ) {.inline.}                                 = eraseScreen()
 
     # •Input•
     proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
@@ -100,19 +101,20 @@ when not defined(con):
     proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
 
     # •Colors•
-    template colors*(_: type con): auto            = con_color
+    template colors*(_: type con): auto              = con_color
     proc reset_color*(Δ) {.inline.} = (con.foregroundColor, con.backgroundColor) = (con.colors.gray, con.colors.black)
-    proc foreground_color*(Δ, color) {.inline.}    = fg_color
-    proc background_color*(Δ, color) {.inline.}    = bg_color
-    proc `foreground_color=`*(Δ, color) {.inline.} =
+    proc foreground_color*(Δ): con.colors {.inline.} = fg_color
+    proc background_color*(Δ): con.colors {.inline.} = bg_color
+    proc `foreground_color=`*(Δ, color) {.inline.}   =
         let (shade, bright) = con_color_impl[color.int]
         con.output.setForegroundColor shade, bright
         fg_color = color
-    proc `background_color=`*(Δ, color) {.inline.} =
+    proc `background_color=`*(Δ, color) {.inline.}   =
         let (shade, bright) = con_color_impl[color.int]
         con.output.setBackgroundColor (shade.int+10).BackgroundColor, bright
         bg_color = color
-    proc chalk*(feed: auto, color: con_color): con_chunk {.inline} = feed.Δchunk(color=color.int8)
+    proc fg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(fg=color.int8)
+    proc bg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(bg=color.int8)
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.} = 
@@ -170,12 +172,18 @@ when not defined(con):
     proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
 
     # •Chunks mechanics•
-    proc Δchunk*(feed: auto, color = -1): con_chunk {.inline.}      =
-        when type(feed) is con_chunk: feed else: con_chunk(text: $feed, color: color.int8)
-    proc Δlog*(self: con_chunk) {.inline.}                          =
-        if self.color != -1: con.foreground_color = self.color.con_color
+    template chunk*(_: type con): auto                                  = con_chunk
+    proc new_chunk*(feed: auto, fg = -1, bg = -1): con.chunk {.inline.} =
+        when type(feed) is con.chunk:
+            con_chunk(text: $feed, fg: (if -1 != fg: fg.int8 else: feed.fg), bg: (if -1 != bg: bg.int8 else: feed.bg))
+        else: con_chunk(text: $feed, fg: fg.int8, bg: bg.int8)
+    proc `$`(self: con.chunk): string {.inline.}                        = self.text
+    proc Δlog(self: con.chunk)                                          =
+        let (fg, bg) = (con.foregroundColor, con.backgroundColor)
+        if self.fg != -1: con.foreground_color = self.fg.con_color
+        if self.bg != -1: con.background_color = self.bg.con_color
+        (con.foregroundColor, con.backgroundColor) = (fg, bg)
         con.output.write out_conv.convert self.text
-    proc `$`*(self: con_chunk): string {.inline.}                  = self.text
 
     # --Pre-init goes here:
     con.resetColor()
