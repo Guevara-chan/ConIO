@@ -98,7 +98,7 @@ when not defined(con):
     proc clear*(Δ) {.inline.}                                 = eraseScreen()
 
     # •Input•
-    proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.input.readLine
+    proc readline*(Δ): string {.discardable inline.}               = in_conv.convert con.in.readLine
     proc read*(Δ): int16 {.discardable inline.}                    = getChar().int16
     proc read_key*(Δ; echoed = true): Rune {.discardable inline.}  = (if echoed:get_echoed_char() else: con.read).Rune
     proc key_available*(Δ): bool {.discardable inline.}            = keyboard_hit() != 0
