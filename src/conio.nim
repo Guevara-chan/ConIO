@@ -173,16 +173,16 @@ when not defined(con):
     proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
 
     # •Chunks mechanics•
+    proc `$`*(self: con.chunk): string {.inline.}                       = self.text
     proc new_chunk*(feed: auto, fg = -1, bg = -1): con.chunk {.inline.} =
         when type(feed) is con.chunk:
             con_chunk(text: $feed, fg: (if -1 != fg: fg.int8 else: feed.fg), bg: (if -1 != bg: bg.int8 else: feed.bg))
         else: con_chunk(text: $feed, fg: fg.int8, bg: bg.int8)
-    proc `$`(self: con.chunk): string {.inline.}                        = self.text
     proc Δwrite*(self: con.chunk)                                       =
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
-        con.out.write out_conv.convert self.text
+        con.out.write out_conv.convert $self
         (con.foregroundColor, con.backgroundColor) = (fg, bg)
 
     # --Pre-init goes here:
