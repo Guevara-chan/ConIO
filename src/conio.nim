@@ -31,6 +31,8 @@ when defined(windows):
     proc get_key_state(code: int): cint                 {.stdcall, dynlib: "user32",   importc: "GetKeyState".}
     proc get_console_output_cp(): cint                  {.stdcall, dynlib: "kernel32", importc: "GetConsoleOutputCP".}
     proc get_console_input_cp(): cint                   {.stdcall, dynlib: "kernel32", importc: "GetConsoleCP".}
+    proc set_console_output_cp(cp: int): cint           {.stdcall, dynlib: "kernel32", importc: "SetConsoleOutputCP".}
+    proc set_console_input_cp(cp: int): cint            {.stdcall, dynlib: "kernel32", importc: "SetConsoleCP".}
     proc get_console_window(): cint                     {.stdcall, dynlib: "kernel32", importc: "GetConsoleWindow".}
     proc show_window(win: int, flags: int): cint        {.stdcall, dynlib: "user32",   importc: "ShowWindow".}
     proc is_window_visible(win: int): cint              {.stdcall, dynlib: "user32",   importc: "IsWindowVisible".}
@@ -79,7 +81,6 @@ when not defined(con):
         (fgCyan, true), (fgRed, true), (fgMagenta, true), (fgYellow, true), (fgWhite, true)]
     var 
         (fg_color, bg_color) = (con_color.gray, con_color.black)
-        out_conv, in_conv: EncodingConverter
     using
         Δ:     type con
         cur:   type con.cursor
@@ -98,7 +99,7 @@ when not defined(con):
     proc clear*(Δ) {.inline.}                                 = eraseScreen()
 
     # •Input•
-    proc readline*(Δ): string {.discardable inline.}              = in_conv.convert con.in.readLine
+    proc readline*(Δ): string {.discardable inline.}              = convert(con.in.readLine,"UTF-8",con.input_encoding)
     proc read*(Δ): int16 {.discardable inline.}                   = getChar().int16
     proc read_key*(Δ; echoed = true): Rune {.discardable inline.} = (if echoed:get_echoed_char() else: con.read).Rune
     proc key_available*(Δ): bool {.discardable inline.}           = keyboard_hit() != 0
@@ -169,8 +170,10 @@ when not defined(con):
         let buffer = cast[WideCString](array[max_buf, Utf16Char].new)
         discard buffer.getConsoleTitle max_buf
         return $buffer
-    proc `visible=`*(Δ; val: bool) {.inline.}            = discard con.window.show_window(val.int)
-    proc `title=`*(Δ; title: auto) {.inline.}            = discard $(title).newWideCString.setConsoleTitle
+    proc `output_encoding=`*(Δ; cp: string) {.inline.} = discard encodings_aux.nameToCodePage(cp).set_console_output_cp
+    proc `input_encoding=`*(Δ; cp: string) {.inline.}  = discard encodings_aux.nameToCodePage(cp).set_console_input_cp
+    proc `visible=`*(Δ; val: bool) {.inline.}          = discard con.window.show_window(val.int)
+    proc `title=`*(Δ; title: auto) {.inline.}          = discard $(title).newWideCString.setConsoleTitle
 
     # •Chunks mechanics•
     proc `$`*(self: con.chunk): string {.inline.}                       = self.text
@@ -182,13 +185,11 @@ when not defined(con):
         let (fg, bg) = (con.foregroundColor, con.backgroundColor)
         if self.fg != -1: con.foreground_color = self.fg.con_color
         if self.bg != -1: con.background_color = self.bg.con_color
-        con.out.write out_conv.convert $self
+        con.out.write convert($self, con.output_encoding, "UTF-8")
         (con.foregroundColor, con.backgroundColor) = (fg, bg)
 
     # --Pre-init goes here:
     con.resetColor()
-    out_conv = encodings.open(con.output_encoding, "UTF-8")
-    in_conv  = encodings.open("UTF-8", con.input_encoding)
 #.}
 
 # ==Testing code==
