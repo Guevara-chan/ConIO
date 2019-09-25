@@ -5,6 +5,7 @@
 import "../src/conio"
 
 con.title = "•Con/IO test•"
+con.output_encoding = "CP866"
 con.cursor.height = 100
 con.set_window_size 43, 12
 con.set_buffer_size con.window_width, con.window_height
