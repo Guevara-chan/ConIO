@@ -2,7 +2,7 @@
 # Con/IO terminal library v0.1
 # Developed in 2019 by V.A. Guevara
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- #
-from strutils import join
+from strutils import join, parseEnum
 import terminal, unicode, encodings, "encodings_aux.nimi"
 export unicode
 
@@ -85,6 +85,7 @@ when not defined(con):
         Δ:     type con
         cur:   type con.cursor
         color: con.colors
+        cname: string
         
     # --Methods goes here:
     # •Handles•
@@ -118,6 +119,8 @@ when not defined(con):
         bg_color = color
     proc fg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(fg=color.int8)
     proc bg*(feed: auto, color): con_chunk {.inline} = feed.new_chunk(bg=color.int8)
+    proc fg*(feed: auto, cname): con_chunk {.inline} = feed.new_chunk(fg=parseEnum[con.colors](cname).int8)
+    proc bg*(feed: auto, cname): con_chunk {.inline} = feed.new_chunk(bg=parseEnum[con.colors](cname).int8)
 
     # •Sizing•
     proc set_buffer_size*(Δ; w=120, h=9001) {.inline.} = 
