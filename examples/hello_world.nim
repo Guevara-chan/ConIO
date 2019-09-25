@@ -15,6 +15,6 @@ for t in 0..8:
     con.foreground_color = cast[con.colors](t + 7)
     con.log "Hello, world !", "Привет, мир."
     con.beep(t * 100)
-con.write "Press".fg(con.colors.red), " any ".fg(con.colors.green), "key...".fg(con.colors.cyan)
+con.write "Press".fg("red"), " any ".fg(con.colors.green), "key...".fg("cyan")
 con.read_key
 con.reset_color
